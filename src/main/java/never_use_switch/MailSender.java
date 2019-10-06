@@ -3,7 +3,11 @@ package never_use_switch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author Evgeny Borisov
@@ -11,15 +15,20 @@ import java.util.Map;
 @Service
 public class MailSender {
 
+
+    private Map<Integer, MailGenerator> map;
+
     @Autowired
-    private Map<String, MailGenerator> map;
+    public MailSender(List<MailGenerator> mailGenerators) {
+        map = mailGenerators.stream().collect(toMap(MailGenerator::myCode, Function.identity()));
+    }
 
     public void sendMail(int mailCode) {
-        String code = String.valueOf(mailCode);
-        MailGenerator mailGenerator = map.get(code);
+
+        MailGenerator mailGenerator = map.get(mailCode);
 
         if (mailGenerator == null) {
-            throw new UnsupportedOperationException(code + " not supported yet");
+            throw new UnsupportedOperationException(mailCode + " not supported yet");
         }
 
         String html = mailGenerator.generateMail();
